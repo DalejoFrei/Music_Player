@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="#000000"
+    android:foregroundGravity="center"
+    android:gravity="center"
+    app:layout_gravity="center">
+
+    <TextView
+        android:id="@+id/home_menu_item_text"
+        android:layout_width="130dp"
+        android:layout_height="42dp"
+        android:layout_weight="1"
+        android:autoText="false"
+        android:gravity="center"
+        android:text="TextView"
+        android:textColor="#FFFFFF" />
+</LinearLayout>
