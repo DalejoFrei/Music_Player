@@ -1,0 +1,134 @@
+2/13/2024:
+    Wrote ID auto generator and implemented it into the Playlist class.
+    Deleted/commented code referencing Queue class as well as the class itself.
+    For next time, make the queue a playlist or hash map.
+
+3/19/2024:
+    Added addToQueueTest() to MainActivityViewModel for Queue testing.
+
+4/14/2024:
+    Removed all references to MusicItem.nextSong and MusicItem.previousSong since we are now using only ArrayLists.
+    Removed SelectedList bug where the SelectedList would be assigned to whatever playlist you clicked on even just to view.
+    Replaced all references with currentSong = mainActivityViewModel.getMusicItems.getValue().get(currentSong's index +/- 1);
+    ^ still need to add in a few of these references though.
+
+4/21/2024:
+    Queue mechanism rework:
+        MusicItem:
+            - Added hasQueue, addToQueue(), pop(), and killQueue()
+            - Added LinkedList<MusicItems> queuedSongs
+        MainActivity:
+            - Added next button queue check workflow that checks if there is a queue tied to the currentsong before deciding to switch over
+            - Added previous button mechanism that refers to the queueTmp lock before switching songs.
+            - Added queueTmp lock activation when adding items to queue on Line 412.
+        Queue mechanism:
+            queueTmp serves as a lock and pointer. It holds the item that starts a queue (when you press "add to queue" the currentSong stacks those into its queue)
+            when hitting next, the program uses a LinkedList that holds references to the music items in the main list.
+            As long as queueTmp is NOT null, switching songs will always refer to the LL held in the queueTmp MusicItem.
+For next time:
+    Activate selectedList based on the list that the user plays rather than whatever it is right now.
+    Make sure queue mechanism works with the selectedList/playlist.
+
+4/29/2024:
+    commented out:
+    - HomeMenuItemsAdapter lines 51 & 52
+For next time: keep doing 4/29 progress
+
+5/13/2024:
+    Fixed next song bug where it would only play the next song in the main list.
+    The order will now play according to what is logged under selectedList.
+    Actions:
+            MainActivity line 489/490
+            SWAPPED:
+                /*
+                            int currentSongIndex = mainActivityViewModel.getMusicItems().getValue().indexOf(mainActivityViewModel.getCurrentSong());
+                            if (currentSongIndex != mainActivityViewModel.getMusicItems().getValue().size() - 1 && mainActivityViewModel.getMusicItems().getValue().get(currentSongIndex + 1) != null)//if the next song is not null, play the next song
+                                mainActivityViewModel.setCurrentSong(mainActivityViewModel.getMusicItems().getValue().get(currentSongIndex + 1));
+                             */
+            WITH:
+                /*
+                    int currentSongIndex = mainActivityViewModel.getSelectedList().indexOf(mainActivityViewModel.getCurrentSong());
+                                if (currentSongIndex != mainActivityViewModel.getSelectedList().size() - 1 && mainActivityViewModel.getSelectedList().get(currentSongIndex + 1) != null)//if the next song is not null, play the next song
+                                    mainActivityViewModel.setCurrentSong(mainActivityViewModel.getSelectedList().get(currentSongIndex + 1));
+                */
+            Deleted:
+                MainActivityViewModel line 85:
+                /*
+                setSelectedList(playlist.getTracks());
+                        this.selectedPlaylist = playlist;
+                        Log.e("Selected_Playlist", "Selected playlist: " + this.getSelectedPlaylist().getName());
+
+                        Log.e("SetSelectedPlaylist",  "Selected PlayList:");
+                        printList(this.selectedList);
+                */
+    Problem: SelectedList still changes every time the user looks at a different list.
+             Still needs to remain static until a new song is pressed.
+    For next time: have selectedList update only when a new song view is pressed.
+
+5/14/2024:
+    Fixed problem from yesterday by matching conditionals from ListAdapter to the respective actions via selectedPlayList variable.
+    Algorithm:
+        if (selectedPlaylist name is null){
+            //means that user selected "Get Tracks" and is not looking at a specified playlist
+            selectedList becomes musicItems.getValue()
+        }else{ //user is looking at a specified playlist (Playlist 1, Playlist 2, etc..)
+            //selectedList becomes selectedPlaylist's tracks
+        }
+5/20/2024:
+    Fixed bug where duplicate songs of the same title would both be highlighted.
+    Actions:
+        ListAdapter Line 63:
+            - added '&& [position of the current song in the list] == [View position in adapter]'
+
+5/21/2024:
+    added isPaused boolean in MusicPlayerFragment to detect if the song is paused or playing.
+    deleted pause button and made play button image change based on the state of the song (if isPaused is true or false)
+
+5/25/2024:
+    Deleted isPaused boolean from MusicPlayerFragment and moved it to MainActivityViewModel
+    added isPaused triggers to play() stop() and pause() functions in mainActivity.
+    added play() in next() function MainActivity
+    added duration and timeremaining TextViews in music_view resource and MusicPlayerFragment.
+    Problems:
+        currentSong no longer gets set when song is selected within a playlist.
+
+7/14/2024:
+    Addressed problem from previous work session
+        - ListAdapter -> itemView.OnClickListener -> added mediator.getMusicTab() to both conditionals.
+    Added "mediator.play(mediator.getMainActivityViewModel().getCurrentSong().getTitle());" to line 132 in itemView.OnClickListener to play music when itemView is selected
+7/15/2024:
+    Added Toast(s) to dropdown actions
+    Swapped play button image with pause in musictab
+    Bug:
+        When you delete a song, it does not disappear right away.
+
+12/30/2024:
+    Issue from last time occured because the current list and playlist were null, so no lists were actually referenced.
+    Fixed that issue. Songs now get deleted, but only after refreshing fragments.
+    Problems:
+        Figure out how to handle the musicItems observer in MainActivity line 296.
+        Putting it in onCreate causes an infinite event.
+        It is also referenced in line 184.
+
+1/11/2025:
+    - need to observe the lists individually (musicItems and playlists; all MutableLiveDate)
+    - created setObservers in MAVM line 82. To be used when switching selectedList.
+     if (getMainActivityViewModel().getSelectedList() != null)
+                    setObservers();
+
+1/15/2025:
+    Removed uses of public Arraylist<MusicItem> getMusicItems
+        - all cases referring to the main list should refer to it directly through the VM
+
+    Fixed issue where tracks fragment songs wouldn't disappear after being deleted.
+
+    Added safeDelete() in MA line 548
+
+    **** NOTE TO SELF: Changing a Mutable data struct's VALUE (""""".getValue()) doesn't notify the observer. YOU MUST USE THE .setValue(); FUNCTION TO NOTIFY THE OBSERVER ******
+
+1/22/2025:
+    Solved problem where playlist tracks wouldn't delete in realtime.
+    Added " this.tracks.setValue(this.tracks.getValue()); " on line 45 of Playlist.java
+
+    Next step: work towards removing song from playlist when deleted from main musicItems.
+        Added onto "removeSongFromMainList" but does not do anything anymore

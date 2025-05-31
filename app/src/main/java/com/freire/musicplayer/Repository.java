@@ -25,13 +25,9 @@ public class Repository {
         MusicItem hold = null;
         MusicItem next = null;
         //populates a TEST array of music items
-        for(int i = 0; i < 5; i++){
+        for(int i = 0; i < 10; i++){
             MusicItem current = new MusicItem(i, ""+ i + " song");
             current.id = i;
-            if(i>0)
-                current.setPreviousSong(hold);
-            hold = current;
-
             musicItems.add(current);
             Log.e("added song", "" + current.getTitle());
         }
@@ -42,12 +38,13 @@ public class Repository {
             temp.addTrack(this.musicItems.get(i));
 
             playlists.add(temp);
-            Log.e("added playlist", "" + temp.name);
+            Log.e("added playlist", "" + temp.getName());
         }
         playlists.add(new Playlist("Artists"));
         playlists.add(new Playlist("Genres"));
-        musicItems = parseList(musicItems);
+        //musicItems = parseList(musicItems);
     }
+    /*
     public ArrayList<MusicItem> parseList(ArrayList<MusicItem> list){ //ads pointers to music items list
         ArrayList<MusicItem> result = new ArrayList<MusicItem>();
         MusicItem temp = list.get(0);
@@ -74,4 +71,6 @@ public class Repository {
         }
         return result;
     }
+
+     */
 }

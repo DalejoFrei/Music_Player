@@ -31,13 +31,14 @@ public class MusicPlayerFragment extends Fragment{
     private Mediator mediator;
 
     public ImageButton prev;
-    public ImageButton pause;
     public ImageButton play;
     public ImageButton next;
 
     public ImageView background;
     public TextView songName;
     public SeekBar progress;
+    public TextView duration;
+    public TextView timeRemaining;
 
     private ImageButton settings;
     private String action0 = "";
@@ -47,8 +48,6 @@ public class MusicPlayerFragment extends Fragment{
 
     private boolean lock = false;
     public ArrayList<MusicItem> musicItems;
-
-
     public MusicPlayerFragment() {
         // Required empty public constructor
     }
@@ -62,6 +61,7 @@ public class MusicPlayerFragment extends Fragment{
     public void onAttach(Context context) {
         super.onAttach(context);
         mediator = (Mediator)context;
+        mediator.hideMusicTab();
     }
     @Override
     public void onPause() {
@@ -77,16 +77,18 @@ public class MusicPlayerFragment extends Fragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.music_view, container, false);
-        musicItems = mediator.getMusicItems();
+        musicItems = mediator.getMainActivityViewModel().getMusicItems().getValue();
 //        music = MediaPlayer.create(getContext(), R.raw.smells_like_teen_spirit);
 
         //bind views to vars
         prev = view.findViewById(R.id.rewind_button);
-        pause = view.findViewById(R.id.pause_button);
         play = view.findViewById(R.id.play_button);
         next = view.findViewById(R.id.forward_button);
         background = view.findViewById(R.id.music_image);
         songName = view.findViewById(R.id.song_name);
+        timeRemaining = view.findViewById(R.id.remainingTime);
+        duration = view.findViewById(R.id.durationDisplay);
+
 
         progress = view.findViewById(R.id.seekBar);
 
@@ -97,12 +99,6 @@ public class MusicPlayerFragment extends Fragment{
             @Override
             public void onClick(View view) {
                 play();
-            }
-        });
-        pause.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                pause();
             }
         });
         prev.setOnClickListener(new View.OnClickListener() {
@@ -118,7 +114,7 @@ public class MusicPlayerFragment extends Fragment{
             }
         });
 
-
+        play();
 /*
         MusicItem newItem = new MusicItem(0, "Over the Horizon");
         musicItems.add(newItem);
@@ -133,6 +129,8 @@ public class MusicPlayerFragment extends Fragment{
     public void onViewCreated(View view, Bundle savedInstanceState) {
         songName.setText(mediator.getMainActivityViewModel().getCurrentSong().getTitle());
         Log.e("show name", "" + mediator.getMainActivityViewModel().getCurrentSong().getTitle());
+        duration.setText("" + mediator.getMainActivityViewModel().getCurrentSong().getDuration());
+        timeRemaining.setText("00:00");
 
         //Settings setup
         settings.setOnClickListener(new View.OnClickListener() {
@@ -150,18 +148,27 @@ public class MusicPlayerFragment extends Fragment{
         });
     }
     public void play(){
-        mediator.play(songName.getText().toString());
+        if(mediator.getMainActivityViewModel().getCurrentSong().isPaused == true) {
+            play.setImageResource(R.drawable.ic_media_pause);
+            mediator.play(songName.getText().toString());
+            mediator.getMainActivityViewModel().getCurrentSong().isPaused = false;
+        }else {//if music is playing
+            play.setImageResource(R.drawable.ic_media_play);
+            pause();
+            mediator.getMainActivityViewModel().getCurrentSong().isPaused= true;
+        }
     }
     public void pause(){
         mediator.pause(songName.getText().toString());
+        Log.e("paused", "music was paused");
     }
     public void previous(){
-        mediator.previous(songName.getText().toString());
+        mediator.previous();
         songName.setText(mediator.getMainActivityViewModel().getCurrentSong().getTitle());
 
     }
     public void next(){
-        mediator.next(songName.getText().toString());
+        mediator.next();
         songName.setText(mediator.getMainActivityViewModel().getCurrentSong().getTitle());
     }
 }

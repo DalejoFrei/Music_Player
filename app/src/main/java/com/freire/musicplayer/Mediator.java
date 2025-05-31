@@ -25,10 +25,10 @@ public interface Mediator {
     public PlaylistContent toPlaylistContent();
     public AddToPlaylist toAddToPlaylist();
     public GenreFragment toGenreFragment();
+    public void hideMusicTab();
    /*
     **Getters
      */
-    public ArrayList<MusicItem> getMusicItems();
     public MainActivityViewModel getMainActivityViewModel();
     public MusicItem getSongToAddToPlaylist();
     public void showSongs();
@@ -36,27 +36,21 @@ public interface Mediator {
     **Setters
      */
     public MusicItem setSongToAddToPlaylist(MusicItem musicItem);
-    /*
+
+   /*
     **Menu widgets
      */
     public void popupMenu(View view, PopupMenu.OnMenuItemClickListener listener);
     public void playlistPopupMenu(View view,PopupMenu.OnMenuItemClickListener listener);
         public boolean onMenuItemClick(MenuItem item, int position, MusicItem song);
     public boolean onPlaylistMenuItemClick(MenuItem item);
-        /*
-    **Queue methods
-     */
-    public void resetQueue();
-    public LinkedList<MusicItem> popFromQueue(LinkedList<MusicItem> queue);
-    public LinkedList<MusicItem> addToQueue(LinkedList<MusicItem> queue, MusicItem songToBeAdded);
-    /*
-    **Music item actions
-     */
+
+    //Music item actions
     public void play(String title);
     public void pause(String title);
     public void stop(String title);
-    public void next(String title);
-    public void previous(String title);
+    public void next();
+    public void previous();
     public void getMusicTab();
 
     //toast

@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements Mediator{
 
     public View musicTab;
 
+    public MusicItem queuedTmp; //MusicItem that spawns a queue
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,8 +111,7 @@ public class MainActivity extends AppCompatActivity implements Mediator{
         
          */
 
-
-        //views
+        //Views
         musicTab = findViewById(R.id.music_tab_layout);
         songName = musicTab.findViewById(R.id.songName);
         ImageButton prev = musicTab.findViewById(R.id.prev);
@@ -120,28 +120,32 @@ public class MainActivity extends AppCompatActivity implements Mediator{
         prev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                music.pause();
-                previous(getMainActivityViewModel().getCurrentSong().getTitle());
+                //music.pause();
+                previous();
                 songName.setText(getMainActivityViewModel().getCurrentSong().getTitle());
-                music.start();
+                //music.start();
             }
         });
         playpause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //play data in currentSong file variable
-                //music.start();
+                Log.e("playButton","play button");
+                if(mainActivityViewModel.getCurrentSong().isPaused == true) {
+                    playpause.setImageResource(R.drawable.ic_media_pause);
+                    play(songName.getText().toString());
+                }else {//if music is playing
+                    playpause.setImageResource(R.drawable.ic_media_play);
+                    pause(mainActivityViewModel.getCurrentSong().getTitle());
+                }
             }
         });
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                music.stop();
-                Log.e("before clicked", "currnt song is " + getMainActivityViewModel().getCurrentSong().getTitle());
-                next(getMainActivityViewModel().getCurrentSong().getTitle());
+               // music.stop();
+                next();
                 songName.setText(getMainActivityViewModel().getCurrentSong().getTitle());
-                Log.e("after clicked", "currnt song is " + getMainActivityViewModel().getCurrentSong().getTitle());
-                music.start();
+                //music.start();
             }
         });
         musicTab.setOnClickListener(new View.OnClickListener() {
@@ -168,27 +172,28 @@ public class MainActivity extends AppCompatActivity implements Mediator{
             Log.e("notice", "landscape mode detected");
         }
 
-        //set observers:
-        mainActivityViewModel.getMusicItems().observe(this, new Observer<ArrayList<MusicItem>>() {
-            @Override
-            public void onChanged(ArrayList<MusicItem> musicItems) {
-                Log.e("MainActObserver", "Observed a change");
-                //adjustPlaylists();
-            }
-        });
+        //no clue what this is for
         if(getMainActivityViewModel().getCurrentSong() != null){
             getMusicTab();
             Log.e("musicTabLog", "currentSong is NOT null");
-        }else {Log.e("musicTabLog", "currentSong is indeed null");}
-
+        }else {
+            Log.e("musicTabLog", "currentSong is indeed null");
         }
+        if(getMainActivityViewModel().getMusicItems().getValue() != null) {
+            printList(getMainActivityViewModel().getMusicItems().getValue());
+        }
+    }
+
 
     @SuppressLint("ResourceType")
     public void getMusicTab(){
         musicTab = (LinearLayout) findViewById(R.id.music_tab_layout);
         musicTab.setVisibility(View.VISIBLE);
         songName.setText(getMainActivityViewModel().getCurrentSong().getTitle());
-
+    }
+    public void hideMusicTab(){
+        if(musicTab.getVisibility() == View.VISIBLE)
+            musicTab.setVisibility(View.INVISIBLE);
     }
 
     /*
@@ -285,16 +290,25 @@ public class MainActivity extends AppCompatActivity implements Mediator{
     public void getPermissions(){
 
     }
-
+/*
+    public void setObservers(){
+        //set observers:
+        getMainActivityViewModel().getMusicItems().observe(this, new Observer<ArrayList<MusicItem>>() {
+            @Override
+            public void onChanged(ArrayList<MusicItem> musicItems) {
+                Log.e("MainActObserver", "Observed a change");
+                getMainActivityViewModel().getMusicItems().setValue(musicItems);
+                //adjustPlaylists();
+            }
+        });
+    }
+*/
 
     /*
     ** Getters
      */
     public MainActivityViewModel getMainActivityViewModel() {
         return this.mainActivityViewModel;
-    }
-    public ArrayList<MusicItem> getMusicItems(){
-        return this.mainActivityViewModel.getMusicItems().getValue();
     }
 
     public ArrayList<File> getMusic(File dir){//populates our music data structure
@@ -334,54 +348,6 @@ public class MainActivity extends AppCompatActivity implements Mediator{
         return this.toAddToPlaylist;
     }
     /*
-     **Queue management
-     */
-    public LinkedList<MusicItem> addToQueue(LinkedList<MusicItem> queue, MusicItem songToBeAdded){
-        LinkedList<MusicItem> result = queue;
-        if(queue == null){
-            /*
-            queue = new LinkedList<>();
-            queue.addFirst(mainActivityViewModel.getCurrentSong());
-             */
-            result = new LinkedList<>();
-            result.addFirst(songToBeAdded);
-            Log.e("New queue", "Queue created");
-   
-            return result;
-        }else {
-            MusicItem tmp = result.getLast().getNextSong();
-            songToBeAdded.setNextSong(tmp);
-            songToBeAdded.setPreviousSong(result.getFirst().getPreviousSong());
-            result.getLast().setNextSong(songToBeAdded);
-            result.add(songToBeAdded);
-            printQueue(result);
-            /*
-            MusicItem tmp = queue.getLast().getNextSong();
-            songToBeAdded.setNextSong(tmp);
-            songToBeAdded.setPreviousSong(queue.getFirst().getPreviousSong());
-            queue.getLast().setNextSong(songToBeAdded);
-            queue.add(songToBeAdded);
-            printQueue();
-             */
-        }
-        return result;
-
-    }
-    public LinkedList<MusicItem> popFromQueue(LinkedList<MusicItem> queue){
-        MusicItem tmp = queue.getFirst();//assign head node to tmp
-        //queue.addFirst(queue.getFirst().getNextSong());//assign next node to head
-        queue.pop();//pop from queue
-        queue.getFirst().setPreviousSong(tmp.getPreviousSong());//link head to rest of the list
-        return queue;
-    }
-    public void printQueue(LinkedList<MusicItem> queue){
-        for(int i = 0; i < queue.size(); i++){
-            Log.e("Print Queue", "|" + queue.get(i).getTitle() + "|");
-        }
-    }
-    public void resetQueue(){mainActivityViewModel.getQueue().setValue(null);}
-
-    /*
     ** Widget tools
      */
     public void onSongSelected(int id){
@@ -414,7 +380,6 @@ public class MainActivity extends AppCompatActivity implements Mediator{
         return null;
     }
 
-
     private boolean checkInstance(MusicItem check, ArrayList<MusicItem> list){
         //checks for an instance of a MusicItem in a list. Returns true if it exists, false if it's not there
         for(int i = 0; i < list.size(); i++){
@@ -445,14 +410,30 @@ public class MainActivity extends AppCompatActivity implements Mediator{
         popupMenu.show();
     }
 
+    public void printList(ArrayList<MusicItem> e){
+        for(int i=0; i < e.size(); i++){
+            Log.e("printlist", "position" + i + " | " + e.get(i).getTitle());
+        }
+    }
+
     @Override
     public boolean onMenuItemClick(MenuItem item, int position, MusicItem song){
+        Toast selectedActionToast = new Toast(this);
         switch (item.getItemId()){
             case R.id.item1: //add to queue
                 Log.e("Menu item selected", "Selected " + item.getTitle() + " | Position: " + position);
-                mainActivityViewModel.getQueue().setValue(addToQueue(this.mainActivityViewModel.getQueue().getValue(), song));
-                //addToQueue(this.mainActivityViewModel.getQueue().getValue(), song);
-                mainActivityViewModel.getQueue();
+                //mainActivityViewModel.getQueue().addToQueue(song);
+                mainActivityViewModel.addToQueueTest(song);
+                if(queuedTmp == null)
+                    queuedTmp = mainActivityViewModel.getCurrentSong();
+                if(mainActivityViewModel.getCurrentSong() == null){
+                    Log.e("stupid", "tried selecting queue without song");
+                    selectedActionToast.setText("Select a song to start a queue");
+                    selectedActionToast.show();
+                }else {
+                    queuedTmp.addToQueue(song);
+                    Log.e("add2Queue", queuedTmp.getQueue().getLast().getTitle() + " added to queue");
+                }
                 return true;
             case R.id.item2: //add to playlist
                 Log.e("Menu item selected", "Selected " + item.getTitle() + " | Position: " + position);
@@ -460,26 +441,19 @@ public class MainActivity extends AppCompatActivity implements Mediator{
                 toAddToPlaylist();
                 return true;
             case R.id.item3: //delete
-                //mainActivityViewModel.removeSong(song);
-                //delete from playlists
-                mainActivityViewModel.removeFromPlaylist(song);
                 /*
-                if(getSupportFragmentManager().findFragmentByTag("toTracks") != null) {
-                    for (int i = 0; i < mainActivityViewModel.getPlaylists().size(); i++) {//playlist
-                        Log.e("for Playlist", "currently on " + mainActivityViewModel.getPlaylists().get(i).getName());
-                        for (int j = 0; j < mainActivityViewModel.getPlaylists().get(i).getTracks().size(); j++) {//playlist tracks
-                            Log.e("for playlistTracks", "currently on " + mainActivityViewModel.getPlaylists().get(i).getTracks().get(j).getTitle());
-                            if (mainActivityViewModel.getPlaylists().get(i).getTracks().get(j).getId() == song.getId()) {
-                                //delete the song from the playlist
-                                getMainActivityViewModel().getPlaylists().get(i).removeTrack(getMainActivityViewModel().getPlaylists().get(i).getTracks().get(j));
-                            }
-                        }
-                    }
+                if(mainActivityViewModel.getSelectedPlaylist() != null) {
+                    //delete from playlists
+                    mainActivityViewModel.removeFromPlaylist(song);
+                    safeDelete(song, mainActivityViewModel.getSelectedList(),mainActivityViewModel.getSelectedPlaylist());
                 }
+                mainActivityViewModel.removeSongFromMainList(song);
 
                  */
-                //mainActivityViewModel.getMusicItems().postValue(get);
+                safeDelete(song,mainActivityViewModel.getMusicItems().getValue(), null);
+                selectedActionToast.setText("Deleted " + song.getTitle());
                 Log.e("Menu item selected", "Selected " + item.getTitle() + " | Position: " + position);
+                selectedActionToast.show();
                 return true;
         }
         return false;
@@ -491,12 +465,12 @@ public class MainActivity extends AppCompatActivity implements Mediator{
             case R.id.item1: //Edit
                 Log.e("Menu item selected", "Selected " + item.getTitle());
                 //addToQueue(this.mainActivityViewModel.getQueue().getValue(), song);
-                mainActivityViewModel.getQueue();
+                //mainActivityViewModel.getQueue();
                 return true;
             case R.id.item2: //add to queue
                 Log.e("Menu item selected", "Selected " + item.getTitle());
                 for(int i = 0; i < getMainActivityViewModel().getSelectedPlaylist().getTracks().size(); i++){
-                    addToQueue(getMainActivityViewModel().getQueue().getValue(), getMainActivityViewModel().getSelectedPlaylist().getTracks().get(i));
+                    //mainActivityViewModel.getQueue().addToQueue(getMainActivityViewModel().getSelectedPlaylist().getTracks().get(i));
                 }
                 return true;
             case R.id.item3: //delete
@@ -523,44 +497,82 @@ public class MainActivity extends AppCompatActivity implements Mediator{
     ** MusicItem actions
      */
     public void play(String title){
+        mainActivityViewModel.getCurrentSong().isPaused = false;
         music.start();
         Log.e("played", "playing music...." + title);
     }
     public void pause(String title){
+        mainActivityViewModel.getCurrentSong().isPaused = true;
         music.pause();
         Log.e("paused", "music paused");
     }
     public void stop(String title){
+        mainActivityViewModel.getCurrentSong().isPaused = true;
         music.stop();
         Log.e("stopped", "Music stopped");
         music = MediaPlayer.create(this, R.raw.over_the_horizon);
         Log.e("msg", "created new music instance");
     }
 
-    public void next(String title){
-        MusicItem tmp = mainActivityViewModel.getCurrentSong();
-        if(mainActivityViewModel.getCurrentSong().getNextSong() != null) {
-            music.stop();
-            Log.e("fr", "next song button");
-            mainActivityViewModel.setCurrentSong(mainActivityViewModel.getCurrentSong().getNextSong());
-            mainActivityViewModel.getCurrentSong().setPreviousSong(tmp);
-            music = MediaPlayer.create(this, R.raw.save_my_life);
-            play(getMainActivityViewModel().getCurrentSong().getTitle());
-            Log.e("test song", "song: " + mainActivityViewModel.getCurrentSong().getTitle());
-            for (int i = 0; i < mainActivityViewModel.getMusicItems().getValue().size(); i++) {
-                Log.e("Print musicItems", "|" + mainActivityViewModel.getMusicItems().getValue().get(i).getTitle() + "|");
+    public void next(){
+        stop(getMainActivityViewModel().getCurrentSong().getTitle());
+        Log.e("next", "next song selected");
+        if (queuedTmp == null) { //if there is no queue
+            //Since selectedList changes according to the playlist that the user selects their currentSong from, we need to load the next song according to the order of the selected list
+            int currentSongIndex = mainActivityViewModel.getSelectedList().indexOf(mainActivityViewModel.getCurrentSong());
+            if (currentSongIndex != mainActivityViewModel.getSelectedList().size() - 1 && mainActivityViewModel.getSelectedList().get(currentSongIndex + 1) != null) {//if the next song is not null, play the next song
+                mainActivityViewModel.setCurrentSong(mainActivityViewModel.getSelectedList().get(currentSongIndex + 1));
             }
-        }else{
-            Log.e("uh oh", "next song is null");
+        }else if(queuedTmp.hasQueue()){
+            int findId = queuedTmp.getQueue().getFirst().getId();
+            mainActivityViewModel.setCurrentSong(mainActivityViewModel.getMusicItems().getValue().get(findId));
+            queuedTmp.pop();
+        }else {
+            mainActivityViewModel.setCurrentSong(mainActivityViewModel.getMusicItems().getValue().get(mainActivityViewModel.getMusicItems().getValue().indexOf(queuedTmp) + 1));
+            queuedTmp = null;
         }
+        play(mainActivityViewModel.getCurrentSong().getTitle());
         //USE VIEWMODEL & LIVEDATA TO CHANGE VIEW
     }
-    public void previous(String title){
+    public void previous(){
         Log.e("prev", "previous button");
-        if(mainActivityViewModel.getCurrentSong().getPreviousSong() != null) {
-            mainActivityViewModel.setCurrentSong(mainActivityViewModel.getCurrentSong().getPreviousSong());
-        }else {
-            Log.e("null prev song", "Prevsong is null");
+        if (queuedTmp == null) { //if there is no queue
+            int currentSongIndex = mainActivityViewModel.getSelectedList().indexOf(mainActivityViewModel.getCurrentSong());
+            if (currentSongIndex != 0)//if not at the first song, go back
+                mainActivityViewModel.setCurrentSong(mainActivityViewModel.getSelectedList().get(currentSongIndex - 1));
+        }else{
+            mainActivityViewModel.setCurrentSong(mainActivityViewModel.getMusicItems().getValue().get(mainActivityViewModel.getMusicItems().getValue().indexOf(queuedTmp) - 1));
         }
+    }
+
+    //Safe delete is intended to change the current song if the current song is deleted while playing.
+    public void safeDelete(MusicItem ditch, ArrayList<MusicItem> list, Playlist playlist){
+        Log.e("safe delete", "Entered safe delete");
+        if(mainActivityViewModel.getCurrentSong() == ditch){
+            stop(ditch.getTitle());
+            next();
+        }
+        if(mainActivityViewModel.getSelectedPlaylist() != null) {
+            //delete from playlists
+            mainActivityViewModel.removeFromPlaylist(ditch);
+
+        }else{
+            Log.e("saf", "safe delete selected playlist == null");
+            mainActivityViewModel.removeSongFromMainList(ditch);
+        }
+
+        /*
+
+        ** Was used for debugging 1/22/2025 **
+
+        if(mainActivityViewModel.getSelectedPlaylist() !=null) {
+            Log.e("Delete help", "selectedPlaylist is " + mainActivityViewModel.getSelectedPlaylist().getName());
+        }else if(mainActivityViewModel.getSelectedPlaylist() == null){
+            Log.e("Delete help", "selected playlist is null");
+
+            Log.e("saf", "safe delete selected playlist == null");
+            mainActivityViewModel.removeSongFromMainList(ditch);
+        }
+         */
     }
 }

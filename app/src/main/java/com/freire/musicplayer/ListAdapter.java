@@ -60,12 +60,10 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.MusicViewHolde
         //bind view holder to recyclerview
         holder.bind(music.get(position));
         if(mediator.getMainActivityViewModel().getCurrentSong() != null){
-            if(mediator.getMainActivityViewModel().getCurrentSong().getTitle() == holder.name.getText())
+           if(mediator.getMainActivityViewModel().getCurrentSong().getTitle() == holder.name.getText() && music.indexOf(mediator.getMainActivityViewModel().getCurrentSong()) == position)
                 holder.name.setTextColor(Color.GREEN);
         }
-
      }
-
     @Override
     public int getItemCount() {
         return music.size();
@@ -82,7 +80,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.MusicViewHolde
             musicImg = itemView.findViewById(R.id.music_img);
             name = itemView.findViewById(R.id.title_view);
             options = itemView.findViewById(R.id.playlistContent_options_button);
-            
+
             if(tracksFragment != null) {//tracksFragment side of things
                 //options
                 options.setOnClickListener(new View.OnClickListener() {
@@ -116,21 +114,26 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.MusicViewHolde
                 });
             }
 
-                itemView.setOnClickListener(new View.OnClickListener() {
+                itemView.setOnClickListener(new View.OnClickListener() { //every time you click on a musicItem view, this happens.
                                                 @Override
                                                 public void onClick(View view) {
                                                     MusicItem e = new MusicItem(90, "new");
                                                     mediator.getMainActivityViewModel().setCurrentSong(music.get(getAbsoluteAdapterPosition()));
-                                                    mediator.resetQueue(); //reset the queue
-                                                    mediator.getMainActivityViewModel().getQueue().setValue(mediator.addToQueue(null, mediator.getMainActivityViewModel().getCurrentSong())); //create new queue
-
-                                                    Log.e("Song pressed", "Current Song: " + mediator.getMainActivityViewModel().getCurrentSong().getTitle());
-                                                    mediator.getMusicTab();
+                                                    if(mediator.getMainActivityViewModel().getSelectedPlaylist().getName() != "null"){ //for when selectedlist is an actual playlist
+                                                        Log.e("notEmpty_Playlist", "Populated Playlist");
+                                                        mediator.getMainActivityViewModel().setSelectedList(mediator.getMainActivityViewModel().getSelectedPlaylist().getTracks());
+                                                        mediator.getMusicTab();
+                                                    }else { //for when selectedlist is the main tracks fragment
+                                                        Log.e("Nulled_Playlist", "nulled playlist");
+                                                        mediator.getMainActivityViewModel().setSelectedList(mediator.getMainActivityViewModel().getMusicItems().getValue());
+                                                        Log.e("Song pressed", "Current Song: " + mediator.getMainActivityViewModel().getCurrentSong().getTitle());
+                                                        mediator.getMusicTab();
+                                                    }
+                                                    mediator.play(mediator.getMainActivityViewModel().getCurrentSong().getTitle());
                                                 }
 
-                                            });
+                });
             }
-
 
         public void bind(MusicItem musicItem){
             //bind Views to variable data

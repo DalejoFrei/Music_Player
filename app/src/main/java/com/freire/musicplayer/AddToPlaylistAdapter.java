@@ -78,7 +78,7 @@ public class AddToPlaylistAdapter extends RecyclerView.Adapter<AddToPlaylistAdap
         public void bind(Playlist itemsHolder){
             //bind Views to variable data
             itemNumber.setText("" + getAbsoluteAdapterPosition());
-            playlistName.setText(itemsHolder.name);
+            playlistName.setText(itemsHolder.getName());
         }
     }
 }

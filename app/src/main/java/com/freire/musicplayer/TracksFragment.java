@@ -32,6 +32,7 @@ public class TracksFragment extends Fragment {
     public static TracksFragment tracksFragment;
     private String[] spinnerItems = {"", "Add to playlist", "Add to queue", "Delete"};
     public Observer<MusicItem> currentSongObserver;
+    public Observer<ArrayList<MusicItem>> listObserver;
 
 
     //popup menu
@@ -49,36 +50,44 @@ public class TracksFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle SavedInstanceState) {
-
+        Log.e("Tracks", "launched TracksFragment");
         View fragmentContainer = inflater.inflate(R.layout.tracks, container, false);
         //Set up recyclerView
         RecyclerView recyclerView = fragmentContainer.findViewById(R.id.music_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(fragmentContainer.getContext()));
         recyclerView.addItemDecoration(new DividerItemDecoration(fragmentContainer.getContext(), LinearLayoutManager.VERTICAL));
-        //set observer to change recyclerview
-        Observer<ArrayList<MusicItem>> listObserver = new Observer<ArrayList<MusicItem>>() {
+
+        adapter = new ListAdapter(this, mediator.getMainActivityViewModel().getMusicItems().getValue(), mediator);
+        recyclerView.setAdapter(adapter);
+        //mediator.getMainActivityViewModel().getMusicItems().observe(this.getViewLifecycleOwner(), listObserver);
+
+        //Observers
+         currentSongObserver = new Observer<MusicItem>() { //observes changes made to the current song
+            @Override
+            public void onChanged(MusicItem musicItem) {
+                TracksFragment fragment = adapter.tracksFragment;
+                adapter = new ListAdapter(fragment, mediator.getMainActivityViewModel().getMusicItems().getValue(), mediator);
+                recyclerView.setAdapter(adapter);
+                Log.e("currentSObserve", "currentSongObserver triggered");
+            }
+        };
+
+        listObserver = new Observer<ArrayList<MusicItem>>() {
             @Override
             public void onChanged(ArrayList<MusicItem> musicItems) {
                 TracksFragment fragment = adapter.tracksFragment;
                 adapter = new ListAdapter(fragment, musicItems, mediator);
                 recyclerView.setAdapter(adapter);
+                Log.e("TracksFragObserve","tracks fragment observed a change");
             }
         };
-        adapter = new ListAdapter(this, mediator.getMusicItems(), mediator);
-        recyclerView.setAdapter(adapter);
+
+        //mediator.getMainActivityViewModel().getMusicItems().observe(getViewLifecycleOwner(),listObserver);
         mediator.getMainActivityViewModel().getMusicItems().observe(this.getViewLifecycleOwner(), listObserver);
 
-        //Observer
-         currentSongObserver = new Observer<MusicItem>() { //observes changes made to the current song
-            @Override
-            public void onChanged(MusicItem musicItem) {
-                TracksFragment fragment = adapter.tracksFragment;
-                adapter = new ListAdapter(fragment, mediator.getMusicItems(), mediator);
-                recyclerView.setAdapter(adapter);
-            }
-        };
         return fragmentContainer;
     }
+
     public void showPopup(View view){
         popupMenu = new PopupMenu(this.getContext(),view);
     }

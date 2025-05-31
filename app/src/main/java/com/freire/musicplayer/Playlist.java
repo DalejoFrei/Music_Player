@@ -8,7 +8,7 @@ import androidx.lifecycle.MutableLiveData;
 import java.util.ArrayList;
 
 public class Playlist {
-    String name;
+    private String name;
     public MutableLiveData<ArrayList<MusicItem>> tracks;
     public Playlist(String name){
         this.name = name;
@@ -23,10 +23,26 @@ public class Playlist {
         return name;
     }
 
-    public void addTrack(MusicItem track){this.tracks.getValue().add(track);}
+    //Auto generates song IDs
+    private int generateTrackID(){
+        int forgedID = (int)(Math.random()*1000) + this.tracks.getValue().size();
+        //check for duplicates.. can't have multiple songs have the same id
+        for(MusicItem piece : this.tracks.getValue()){
+            if(piece.getId() == forgedID)
+                generateTrackID();
+        }
+        return forgedID;
+    }
+
+    public void addTrack(MusicItem track){
+        int ID = generateTrackID();
+        MusicItem tmp = new MusicItem(ID, track);
+        this.tracks.getValue().add(tmp);
+    }
     public void removeTrack(MusicItem track){
         this.tracks.getValue().remove(track);
         Log.e("removeTrack", "Removed " + track.getTitle());
+        this.tracks.setValue(this.tracks.getValue());
     }
     public void rename(String name){this.name = name;}
     public String printTracks(){

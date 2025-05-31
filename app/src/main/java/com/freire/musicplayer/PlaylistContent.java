@@ -35,7 +35,7 @@ public class PlaylistContent extends Fragment {
     private ImageView playlistImage;
     private PlaylistContent fragment;
     private ImageButton playlistContent_options_button;
-    private Observer<ArrayList<MusicItem>> playlistTracksOberserver;
+    public Observer<ArrayList<MusicItem>> playlistTracksOberserver;
     public Observer currentSongObserver;
     public PlaylistContent() {
         //required empty constructor
@@ -49,7 +49,7 @@ public class PlaylistContent extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        Log.e("PlaylistContent", "onCreate Playlist Content");
     }
     @Override
     public void onAttach(Context context) {
@@ -67,9 +67,7 @@ public class PlaylistContent extends Fragment {
         RecyclerView recyclerView = view.findViewById(R.id.tracks);
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
         recyclerView.addItemDecoration(new DividerItemDecoration(view.getContext(), LinearLayoutManager.VERTICAL));
-        if(!mediator.getMainActivityViewModel().getSelectedPlaylist().getTracks().isEmpty())
-            playlistInit();
-
+        if(!mediator.getMainActivityViewModel().getSelectedPlaylist().getTracks().isEmpty()){}
         playlistName.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -126,20 +124,5 @@ public class PlaylistContent extends Fragment {
         return view;
     }
     public void getSong(int songID){mediator.onSongSelected(songID);}
-    public void playlistInit(){
-        ArrayList<MusicItem> playlistTracks = mediator.getMainActivityViewModel().getSelectedPlaylist().getTracks();
-        if(playlistTracks.size() > 1) {
-            for (int i = 0; i < playlistTracks.size()-1; i++) {
-                playlistTracks.get(i).setNextSong(playlistTracks.get(i+1));
-                if(i>0) {
-                    playlistTracks.get(i).setPreviousSong(playlistTracks.get(i - 1));
-                    Log.e("prevSong", "set previous song to " + playlistTracks.get(i).getPreviousSong().getTitle());
-                }
-            }
-            playlistTracks.get(playlistTracks.size()-1).setNextSong(playlistTracks.get(0));
-        }else{
-            playlistTracks.get(0).setNextSong(playlistTracks.get(0));
-            playlistTracks.get(0).setPreviousSong(playlistTracks.get(0));
-        }
-    }
+
 }

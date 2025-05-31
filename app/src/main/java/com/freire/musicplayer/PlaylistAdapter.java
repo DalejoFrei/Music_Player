@@ -85,7 +85,7 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.HomeIt
 
         public void bind(Playlist itemsHolder){
             //bind Views to variable data
-            view.setText(itemsHolder.name);
+            view.setText(itemsHolder.getName());
         }
     }
 }

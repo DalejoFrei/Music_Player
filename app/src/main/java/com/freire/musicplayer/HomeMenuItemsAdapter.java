@@ -48,6 +48,7 @@ public class HomeMenuItemsAdapter extends RecyclerView.Adapter<HomeMenuItemsAdap
                             break;
                         case 1: //tracks
                             activity.toTracks();
+                            activity.getMainActivityViewModel().setSelectedPlaylist(new Playlist("null")); //resets playlist reference
                             break;
                         case 2: //artists
                             activity.toArtistsFragment();

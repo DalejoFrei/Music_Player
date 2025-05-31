@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
@@ -54,7 +55,7 @@ public class AddToPlaylist extends Fragment {
         });
         // Set the adapter
         RecyclerView recyclerView = view.findViewById(R.id.list);
-        recyclerView.setLayoutManager(new GridLayoutManager(view.getContext(), 2));
+        recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
         recyclerView.addItemDecoration(new DividerItemDecoration(view.getContext(), DividerItemDecoration.VERTICAL));
         adapter = new AddToPlaylistAdapter(mediator.getMainActivityViewModel().getPlaylists(), this);
         recyclerView.setAdapter(adapter);
